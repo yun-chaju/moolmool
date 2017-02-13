@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="itemMapper">
+	
+	<select id="getShopItemList" resultType="shopItemVO">
+		SELECT s.item_no, name, description, html_tag, item_type, price, h.item_no have, regdate, moddate
+		FROM shop_item s
+			LEFT JOIN (
+				SELECT item_no
+				FROM shop_item_order_history
+				WHERE mem_no = #{memNo}) h
+			ON (s.item_no = h.item_no)
+	</select>
+	
+</mapper>

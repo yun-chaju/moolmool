@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="faqMapper">
+
+<select id="getFaqAllList" resultType="faqVO" >
+		SELECT fno, fname, title, content, regdate, moddate, description
+		FROM faq NATURAL JOIN faq_type
+		ORDER BY fname, regdate
+	</select>
+
+
+<select id="getFaqList" parameterType="string" resultType="faqVO" >
+		SELECT fno, fname, title, content, regdate, moddate, description
+		FROM faq NATURAL JOIN faq_type
+		WHERE fname = #{fName}
+	</select>
+	
+	<select id="getFaqOne" parameterType="int" resultType="faqVO">
+		SELECT fno, fname, title, content, regdate, moddate, description
+		FROM faq NATURAL JOIN faq_type
+		WHERE fno = #{fNo}
+	</select>
+	
+	<insert id="insertFaq" parameterType="faqVO">
+		INSERT INTO faq(fNo, fName, title, content, regDate, modDate)
+		VALUES (SEQ_FNO.NEXTVAL, #{fName}, #{title}, #{content}, SYSDATE, SYSDATE)
+	</insert>
+	
+	<update id="updateFaq" parameterType="faqVO">
+		UPDATE faq
+		SET content = #{content}, moddate = SYSDATE, title =#{title}
+		WHERE fno = #{fNo}
+	</update>
+	
+	<delete id="deleteFaq" parameterType="int">
+		DELETE FROM faq
+		WHERE fno = #{fNo}
+	</delete>
+	
+	<update id="updateFname" parameterType="faqTypeVO">
+		UPDATE faq
+		SET fname = #{fName}
+		WHERE fname = #{oldFName}
+	</update>
+	
+	<delete id="deleteFname" parameterType="faqTypeVO">
+		DELETE FROM faq
+		WHERE fname = #{fName}
+	</delete>
+	
+</mapper>

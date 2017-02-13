@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="tradeCategoryMapper">
+ 
+ <select id="getTradeCategoryList" resultType="TradeCategoryVO">
+ 	SELECT tdc_no, name, parent_no
+ 	FROM trade_category
+ 	WHERE parent_no IS null
+ </select>
+ 
+ <select id="getTradeSubCategoryList" parameterType="String" resultType="TradeCategoryVO">
+ 	SELECT tdc_no, name, parent_no
+ 	FROM trade_category
+ 	WHERE parent_no = 
+ 		(SELECT tdc_no 
+ 			FROM trade_category 
+ 			WHERE name = #{category})
+ </select>
+ 
+ <insert id="insertTradeCategory" parameterType="TradeCategoryVO">
+ 	INSERT INTO trade_category
+ 	VALUES(SEQ_TRADE_CATEGORY_TDC_NO.NEXTVAL, #{name}, #{parentno}) 
+ </insert>
+ 
+ <update id="updateTradeCategory" parameterType="TradeCategoryVO">
+ 	UPDATE trade_category
+ 	SET name = #{name}, parent_no = #{parentno}
+ 	WHERE tdc_no = #{tdcno}
+ </update>
+ 
+ <delete id="deleteTradeCategory" parameterType="int">
+ 	DELETE FROM trade_category
+ 	WHERE tdc_no = #{tdcno}
+ </delete>
+ 
+ 
+ </mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memoMapper">
+
+	<select id="getMemoDetail" parameterType="memoVO" resultType="memoVO">
+		SELECT 
+			writer_no, target_no, content, regdate, moddate
+		FROM memo
+		WHERE writer_no = #{writerNo}
+			AND target_no = #{targetNo}
+	</select>
+	
+	<insert id="insertMemo" parameterType="memoVO">
+		INSERT INTO memo (writer_no, target_no, content, regdate, moddate)
+		VALUES(#{writerNo}, #{targetNo}, #{content}, SYSDATE, SYSDATE)
+	</insert>
+	
+	<update id="updateMemo" parameterType="memoVO">
+		UPDATE memo
+		SET
+			content = #{content},
+			moddate = SYSDATE
+		WHERE writer_no = #{writerNo}
+			AND target_no = #{targetNo}
+	</update>
+	
+	<delete id="deleteMemo" parameterType="memoVO">
+		DELETE FROM memo
+		WHERE writer_no = #{writerNo}
+			AND target_no = #{targetNo}
+	</delete>
+	
+	
+	
+</mapper>

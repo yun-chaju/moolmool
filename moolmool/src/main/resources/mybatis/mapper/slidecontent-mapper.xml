@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="slideContentMapper">
+	
+	<insert id="insertSlideContent" parameterType="slideContentVO">
+		INSERT INTO slide_content (sno, content, regdate, writer_no)
+		VALUES (SEQ_SLIDE_CONTENT_NO.NEXTVAL, #{content}, SYSDATE, #{writerNo})
+	</insert>
+	
+	<update id="updateSlideContent" parameterType="slideContentVO">
+		UPDATE slide_content 
+		SET
+			content = #{content},
+			moddate = SYSDATE
+		WHERE sno = #{sno}
+	</update>
+	
+	<select id="getSlideContentDetail" parameterType="int" resultType="slideContentVO">
+		SELECT sno, content, regdate, writer_no
+		FROM slide_content
+		WHERE sno = #{sno}
+	</select>
+	
+	<select id="getSlideContentList" resultType="slideContentVO">
+		SELECT sno, content, regdate, writer_no
+		FROM slide_content
+	</select>
+	
+</mapper>

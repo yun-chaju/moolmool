@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="faqtypeMapper">
+
+	<select id="getFaqTypeList" resultType="faqTypeVO">
+		SELECT fname, description
+		FROM faq_type
+	</select>
+	
+	<select id="getFaqTypeOne" parameterType="string" resultType="faqTypeVO">
+		SELECT fname, description
+		FROM faq_type
+		WHERE fname = #{fName}
+	</select>
+	
+	<insert id="insertFaqType" parameterType="faqTypeVO">
+		INSERT INTO faq_type(fname, description)
+		VALUES (#{fName}, #{description})
+	</insert>
+	
+	<update id="updateFaqType" parameterType="faqTypeVO">
+		UPDATE faq_type
+		SET description = #{description}, fname = #{fName}
+		WHERE fname = #{oldFName}
+	</update>
+	
+	<delete id="deleteFaqType" parameterType="faqTypeVO">
+		DELETE FROM faq_type
+		WHERE fname = #{fName}
+	</delete>
+	
+</mapper>

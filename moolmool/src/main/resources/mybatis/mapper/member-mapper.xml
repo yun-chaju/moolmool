@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="memberMapper">
+
+	<select id="getMember" parameterType="memberVO" resultType="memberVO">
+		SELECT mem_no, role_code, id, password, m.name,nickname, 
+			email, zip_code, road_addr_part, jibun_addr, addr_detail, 
+			phone, m.regdate, last_mod_date, point, tot_point, status, 
+			psc_code, html_tag psc_url  
+		FROM member m
+		LEFT JOIN personacon p ON (m.psc_code = p.psc_no)
+		WHERE id = #{id} 
+		AND password = #{password}
+	</select>
+	
+	
+	<insert id="insertMember" parameterType="memberVO">
+		INSERT INTO member (mem_no, role_code, id, password, name, nickname, email, zip_code, road_addr_part, jibun_addr, addr_detail, 
+			phone, regdate, last_mod_date, point, tot_point, status)
+		VALUES(SEQ_MEMBER_MNO.NEXTVAL, #{roleCode}, #{id}, #{password},#{name} ,#{nickName}, #{email}, #{zipCode}, #{roadAddrPart}, #{jibunAddr}, #{addrDetail},
+			#{phone}, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
+	</insert>
+	
+ 	<delete id="deleteMember" parameterType="memberVO">
+ 		DELETE FROM member
+		WHERE mem_no = #{memNo}
+		and password = #{password} 
+ 	</delete>
+ 	
+ 	<update id="updateMember" parameterType="memberVO">
+ 		UPDATE member 
+		SET password = #{password}, name=#{name} ,nickname = #{nickName}, email = #{email},
+			zip_code = #{zipCode}, road_addr_part = #{roadAddrPart}, jibun_addr = #{jibunAddr}, addr_detail = #{addrDetail}, phone = #{phone}, 
+			last_mod_date = DEFAULT, point = #{point}, tot_point = #{totPoint}
+		WHERE mem_no = #{memNo}
+ 	</update>
+ 	
+ 	<select id="idCheck" parameterType="String" resultType="int">
+ 		SELECT COUNT(id) FROM member
+        WHERE id = #{id}
+ 	</select>
+	
+	<select id="nickNameCheck" parameterType="String" resultType="int">
+ 		SELECT COUNT(nickname) FROM member
+        WHERE nickname = #{nickName}
+ 	</select>
+ 	
+ 	<select id="emailCheck" parameterType="String" resultType="int">
+ 		SELECT COUNT(email) FROM member
+        WHERE email = #{email}
+ 	</select>
+ 	
+ 	<select id="getAllEmail" resultType="string">
+ 		SELECT email FROM member
+ 	</select>
+ 	
+ 	<!-- 쪽지 유저 체크  -->
+ 	<select id="getMsgUser" parameterType="String" resultType="int">
+ 		SELECT mem_no FROM MEMBER
+		WHERE nickname = #{rnick}
+ 	</select>
+ 	
+ 	<select id="getName" parameterType="String" resultType="String">
+ 		SELECT name FROM member
+ 		WHERE email = #{email}
+ 	</select>
+ 	
+ 	<update id="updateAuthNo" parameterType="map">
+ 		UPDATE member 
+		SET auth_number = #{result}
+		WHERE email = #{email}
+ 	</update>
+ 	
+ 	<select id="authCheck" parameterType="int" resultType="memberVO">
+ 		SELECT id, password FROM member
+        WHERE AUTH_NUMBER = #{authNo}
+ 	</select>
+ 	
+ 	<update id="updateMemberNickname" parameterType="map">
+ 		UPDATE member
+ 		SET nickname = #{nickname}
+ 		WHERE mem_no = #{memNo}
+ 	</update>
+	
+	<select id="getMemberPoint" parameterType="int" resultType="int">
+		SELECT point
+		FROM member
+		WHERE mem_no = #{memNo}
+	</select>
+	
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="noticeMapper">
+
+	<select id="getNoticeList" parameterType="int" resultType="noticeVO">
+		SELECT nno, title, content, category, hit, regdate, moddate, is_deleted
+		FROM (SELECT CEIL(ROWNUM/10) page, nno, title, content, category, hit, regdate, moddate, is_deleted
+					FROM (SELECT nno, title, content, category, hit, regdate, moddate, is_deleted
+					FROM notice
+					WHERE is_deleted = 'N'
+					ORDER BY nno desc)
+					ORDER BY nno desc)
+		WHERE page = ${value}
+	</select>
+
+	<select id="getNoticeTotalCount" resultType="int">
+		SELECT COUNT(*)
+		FROM
+		notice
+		WHERE is_deleted = 'N'
+	</select>
+
+	<select id="getNoticeOne" parameterType="int" resultType="noticeVO">
+		SELECT nno, title, content, category, hit, regdate, moddate
+		FROM notice
+		WHERE nno = #{nno}
+	</select>
+
+	<insert id="insertNotice" parameterType="noticeVO">
+		INSERT INTO notice(nno, title, content, category, hit, regdate, moddate, is_deleted)
+		VALUES(SEQ_NOTICE_NNO.NEXTVAL, #{title}, #{content}, #{category}, DEFAULT,
+		DEFAULT, DEFAULT, 'N')
+	</insert>
+
+	<update id="updateNotice" parameterType="noticeVO">
+		UPDATE notice
+		SET title = #{title}, content = #{content}
+		WHERE nno = #{nno}
+	</update>
+
+	<update id="deleteNotice" parameterType="int">
+		UPDATE notice
+		SET is_deleted = 'Y'
+		WHERE nno = #{nno}
+	</update>
+
+</mapper>

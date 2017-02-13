@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="pointMapper">
+ 
+ 	<select id="getAllPointLog" parameterType="pointVO" resultType="PointVO">
+ 		SELECT mem_no, log_comment, point_change, add_eli, point_date
+ 		FROM point 
+ 		WHERE mem_no = #{memNo}
+ 	</select>
+ 	
+ 	<insert id="insertPoint" parameterType="pointVO">
+ 		INSERT INTO point(mem_no, log_comment, point_change, add_eli, point_date)
+ 		VALUES (#{memNo}, #{logComment}, #{pointChange}, #{addEli}, SYSDATE)
+ 	</insert>
+ 	
+ 	<update id="updateMemberPoint" parameterType="pointVO">
+ 		UPDATE member
+ 		SET
+ 		<if test='addEli == "a".charAt(0)'>
+ 			point = point + #{pointChange}
+ 		</if>
+ 		<if test='addEli == "e".charAt(0)'>
+ 			point = point - #{pointChange}
+ 		</if>
+ 		WHERE mem_no = #{memNo}
+ 	</update>
+
+ 	<delete id="deleteUserPointLog" parameterType="pointVO">
+ 		DELETE 
+ 		FROM point
+ 		WHERE mem_no = #{memNo}
+ 	</delete>
+ </mapper>
+ 

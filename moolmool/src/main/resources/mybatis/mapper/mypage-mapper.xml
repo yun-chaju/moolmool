@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mypageMapper">
+
+	<sql id="searchQuery">
+		<if test="searchInfo != null and searchInfo.sType != null and searchInfo.sType != ''">
+			<choose>
+				<when test='searchInfo.sType.equals("t")'>
+					WHERE title LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("c")'>
+					WHERE content LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("tc")'>
+					WHERE (title LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR content LIKE '%'||#{searchInfo.sKeyword}||'%')
+				</when>
+				<when test='searchInfo.sType.equals("w")'>
+					WHERE writer_nickname LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("wn")'>
+					WHERE writer_no LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<otherwise>
+					WHERE (title LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR content LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR writer_nickname LIKE '%'||#{searchInfo.sKeyword}||'%')
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+ 	
+ 	<!-- 마이페이지 -->
+ 	<select id="getBoardUserList" parameterType="map" resultType="boardVO">
+		SELECT b.bno, b.title, b.content, b.writer_no, b.writer_nickname, b.regdate, b.moddate, b.hit, b.is_deleted, b.bt_code
+		FROM (
+			SELECT CEIL(ROWNUM / 10) page, bno, title, content, writer_no, writer_nickname, regdate, moddate, hit, is_deleted, bt_code
+			FROM (
+				SELECT bno, title, content, writer_no, writer_nickname, regdate, moddate, hit, is_deleted, bt_code
+				FROM board		
+				<include refid="searchQuery" />  AND writer_no = #{memNo}
+				ORDER BY bno desc
+			)
+		) b
+		WHERE page = #{ page }
+	</select>
+ 	
+ 	<select id="getBoardUserTotalCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM board
+		<include refid="searchQuery" /> AND writer_no = #{memNo}
+	</select>
+	
+	<select id="getBoardList" parameterType="map" resultType="boardVO">
+		SELECT b.bno, b.title, b.content, b.writer_no, b.writer_nickname, b.regdate, b.moddate, b.hit, b.is_deleted, b.bt_code
+		FROM (
+			SELECT CEIL(ROWNUM / 10) page, bno, title, content, writer_no, writer_nickname, regdate, moddate, hit, is_deleted, bt_code
+			FROM (
+				SELECT bno, title, content, writer_no, writer_nickname, regdate, moddate, hit, is_deleted, bt_code
+				FROM board		
+				<include refid="searchQuery" />  AND writer_no = #{memNo} AND bt_code = #{btCode}
+				ORDER BY bno desc
+			)
+		) b
+		WHERE page = #{ page }
+	</select>
+	
+	<select id="getBoardTotalCount" parameterType="map" resultType="int">
+		SELECT COUNT(*) 
+		FROM board
+		WHERE is_deleted = 'N'
+			AND bt_code = #{btCode}
+			 AND writer_no = #{memNo}
+			<!-- <include refid="searchQuery" /> -->
+	</select>
+	
+	<select id="getPointLog" parameterType="map" resultType="pointVO">
+		SELECT mem_no, log_comment, point_change, add_eli, point_date
+		FROM (
+			SELECT CEIL(ROWNUM / 20) page, mem_no, log_comment, point_change, add_eli, point_date
+			FROM point
+      		WHERE mem_no = #{memNo}
+			ORDER BY point_date desc
+		)
+		WHERE page = 1
+	</select>
+ 	
+</mapper>

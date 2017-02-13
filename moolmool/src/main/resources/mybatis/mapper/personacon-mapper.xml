@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="personaconMapper">
+	
+	<insert id="insertPersonacon" parameterType="personaconVO">
+		INSERT INTO personacon (psc_no, name, description, html_tag, psc_type, price, regdate)
+		VALUES (SEQ_PSC_NO.NEXTVAL, #{name}, #{description}, #{htmlTag}, #{pscType}, #{price}, SYSDATE)
+	</insert>
+	
+	<insert id="insertOrderPersonacon" parameterType="personaconOrderHistoryVO">
+		INSERT INTO personacon_order_history (psc_no, mem_no, orderdate)
+		VALUES (#{pscNo}, #{memNo}, SYSDATE)
+	</insert>
+	
+	<select id="getPersonaconList" parameterType="java.util.HashMap" resultType="personaconVO">
+	SELECT psc_no, name, description, html_tag, psc_type, price, regdate, moddate, have 
+  	FROM ( SELECT CEIL(ROWNUM/12) page, psc_no, name, description, html_tag, psc_type, price, regdate, moddate, have
+  		FROM (SELECT p.psc_no, name, description, html_tag, psc_type, price, regdate, moddate, h.psc_no have
+  		FROM personacon p
+  			LEFT JOIN (
+  				SELECT psc_no
+  				FROM personacon_order_history
+  				WHERE mem_no = #{memNo}) h 
+  				ON (p.psc_no = h.psc_no))
+  		)
+  	WHERE page = #{page}
+	</select>
+	
+	<select id="getPersonaconDetail" parameterType="int" resultType="personaconVO">
+		SELECT * 
+		FROM personacon
+		WHERE psc_no = #{pscNo}
+	</select>
+	
+	<update id="updatePersonacon" parameterType="personaconVO">
+		UPDATE personacon
+		SET
+			name = #{name},
+			description = #{description},
+			html_tag = #{htmlTag},
+			psc_type = #{pscType},
+			price = #{price},
+			moddate = SYSDATE
+		WHERE psc_no = #{pscNo}
+	</update>
+	
+	<delete id="deletePersonacon" parameterType="int">
+		DELETE FROM personacon
+		WHERE psc_no = #{pscNo}
+	</delete>
+	
+	<select id="getPersonaconTotalCount" resultType="int">
+		SELECT COUNT(*) FROM personacon
+	</select>
+	
+	<update id="updateMemberPersonacon" parameterType="java.util.HashMap">
+		UPDATE MEMBER
+		SET
+			psc_code = #{pscNo}
+		WHERE mem_no = #{memNo}
+	</update>
+	
+</mapper>

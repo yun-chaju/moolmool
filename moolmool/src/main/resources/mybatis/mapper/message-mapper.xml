@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="msgMapper">
+	
+	<sql id='con1'>
+		<choose>
+			<when test='mtype.equals("s")'>
+				sender_no= #{no} AND s_deleted= 'N'
+			</when>
+			<otherwise>
+				receiver_no= #{no} AND r_deleted = 'N'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id='con2'>
+		<choose>
+			<when test='rno!=0'>
+				SET r_deleted = 'Y'
+			</when>
+			<otherwise>
+				SET s_deleted = 'Y'
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<select id="getMsgCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM message 
+		WHERE <include refid="con1" />
+	</select>
+	
+	<select id="getNotOpendMsgCount" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+		FROM message 
+		WHERE receiver_no = #{rno}
+		AND is_opened = 'N'
+	</select>
+	
+	<select id="getMsgList" parameterType="map" resultType="msgVO">
+		SELECT rno, rid, rnick, sno, sid, snick, mno, is_opened, send_date, open_date,
+			title, content, parent_mno
+		FROM (SELECT CEIL(ROWNUM/10) page, m.receiver_no rno, m2.id rid,
+					 m2.nickname rnick, m.sender_no sno, m1.id sid, m1.nickname snick, 
+					 mno, is_opened, send_date, open_date, title, content, parent_mno
+				FROM MESSAGE m
+				JOIN member m1 ON(m.sender_no=m1.mem_no)
+				JOIN member m2 ON (m.receiver_no=m2.mem_no)
+				WHERE <include refid="con1" />)
+ 		WHERE page = #{page} 
+ 		ORDER BY send_date DESC
+	</select>
+		
+	<select id="getMsgDetail" parameterType="msgVO" resultType="msgVO">
+		SELECT m.receiver_no rno, m2.id rid, 
+					 m2.nickname rnick, m.sender_no sno, m1.id sid, m1.nickname snick, 
+					 mno, is_opened, send_date, open_date, title, content, parent_mno
+		FROM MESSAGE m
+		JOIN member m1 ON(m.sender_no=m1.mem_no)
+		JOIN member m2 ON (m.receiver_no=m2.mem_no)
+		WHERE m.mno = #{mno}
+	</select>
+	
+	<insert id="insertMsg" parameterType="msgVO">
+		INSERT INTO message
+ 		VALUES( seq_message_mno.NEXTVAL, #{sno}, #{rno}, DEFAULT, DEFAULT,
+				DEFAULT, DEFAULT, NULL, #{title}, #{content}, 
+												<if test="mno!=null">#{mno}</if>
+												<if test="mno==null">NULL</if>				 
+				
+ 				)
+	</insert>
+	
+	<insert id="insertMessage" parameterType="msgVO">
+		INSERT INTO message (mno, sender_no, receiver_no, is_opened, s_deleted, r_deleted,
+				send_date, open_date, title, content)
+ 		VALUES( seq_message_mno.NEXTVAL, #{sno}, #{rno}, DEFAULT, DEFAULT,
+				DEFAULT, DEFAULT, NULL, #{title}, #{content})	
+	</insert>
+	
+	<update id="updateOpen" parameterType="msgVO">
+		UPDATE message
+		SET is_opened = 'Y',
+		open_date = SYSDATE
+		WHERE mno = #{mno}
+	</update>
+	
+	<update id="deleteMsg" parameterType="msgVO" >
+		UPDATE message
+		<include refid="con2" />
+		WHERE mno = #{mno}
+	</update>
+	
+	<delete id="deleteChecked" parameterType="map">
+		UPDATE message
+		<foreach collection="nos" item="rno" index="index" separator="," open="" close="">
+   		 <choose>
+			<when test='rno!=null'>
+				SET r_deleted = 'Y'
+			</when>
+			<otherwise>
+				SET s_deleted = 'Y'
+			</otherwise>
+		</choose>
+		</foreach>	
+		WHERE mno IN 
+		<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+   		 #{item}
+		</foreach>
+	</delete>
+	
+
+	
+</mapper>

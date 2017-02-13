@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="tradeCommentMapper">
+ 
+ 	<select id="getTradeCommentList" parameterType="int" resultType="tradeCommentVO">
+ 		SELECT t.tc_no, t.tno, t.content, t.alink, t.regdate, t.writer_uno, t.writer_nickname, p.html_tag psc_url
+ 		FROM trade_comment t
+		LEFT JOIN 
+			member m ON (t.writer_uno = m.mem_no)
+		LEFT JOIN 
+			personacon p ON (m.psc_code = p.psc_no)
+ 		WHERE tno = #{tno}
+ 		ORDER BY t.tc_no DESC
+ 	</select>
+ 	
+ 	<select id="getTradeCommentDetail" resultType="tradeCommentVO">
+ 		SELECT tc_no, tno, content, alink, regdate, writer_uno, writer_nickname
+ 		FROM trade_comment
+ 		WHERE tc_no = #{tcno} 
+ 	</select>
+ 	
+ 	<insert id="insertTradeComment" parameterType="tradeCommentVO">
+		INSERT INTO trade_comment (tc_no, tno, content, alink, regdate, writer_uno, writer_nickname)
+		VALUES (SEQ_TRADE_COMMENT_TC_NO.NEXTVAL, #{tno}, #{content}, #{alink}, SYSDATE, #{writerUno}, #{writerNickname}) 	
+ 	</insert>
+ 	
+ 	<update id="updateTradeComment" parameterType="tradeCommentVO">
+ 		UPDATE trade_comment
+ 		SET content = #{content}, alink = #{alink}
+ 		WHERE tc_no = #{tcno}
+ 	</update>
+ 	
+ 	<delete id="deleteTradeComment" parameterType="int">
+ 		DELETE FROM trade_comment
+ 		WHERE tc_no = #{tcno}
+ 	</delete>
+ 	
+ </mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapMapper">
+
+	<select id="getMapList" parameterType="mapVO" resultType="tradeVO">
+		SELECT tno, target_tno, tdc_no, title, content, price, road_addr_part, sido, sigugun,  dongmyun, addr_detail, lat, lng, trade_code, regdate, moddate, writer_uno, writer_nickname, enddate,  trade_type
+			FROM (SELECT CEIL(ROWNUM/10) page, t.tno tno, t.target_tno target_tno,	t.tdc_no tdc_no,  t.title title, 
+            			t.content content, t.price price, t.road_addr_part road_addr_part, t.sido sido, t.sigugun sigugun, t.dongmyun dongmyun, t.addr_detail addr_detail,	t.lat lat, t.lng lng,
+           				t.trade_code trade_code, t.regdate regdate, t.moddate moddate, t.writer_uno writer_uno, t.writer_nickname writer_nickname, t.enddate enddate, t.trade_type trade_type
+       			  FROM trade t
+			 	  LEFT JOIN trade_category c on (t.tdc_no = c.tdc_no)
+		<trim prefix="WHERE" prefixOverrides="AND">
+			<if test='title!=null or title!=""'>
+					t.title LIKE '%'||#{title,jdbcType=VARCHAR}||'%'
+				</if>
+				<if test='category!="category" and category!=null'>
+					AND (c.parent_no IN (select tdc_no from trade_category where name = #{category, jdbcType=VARCHAR})
+					OR c.tdc_no IN (select tdc_no from trade_category where name = #{category, jdbcType=VARCHAR}))
+				</if>
+				<if test='subcategory!="subcategory" and subcategory!=null'>
+					AND (c.parent_no IN (select tdc_no from trade_category where name = #{subcategory, jdbcType=VARCHAR})
+					OR c.tdc_no IN (select tdc_no from trade_category where name = #{subcategory, jdbcType=VARCHAR}))
+				</if>
+				<if test='tradeType!="all" and tradeType!=null'>
+					AND t.trade_type = #{tradeType , jdbcType=CHAR}
+				</if>
+				<if test='sd!="sd" and sd!=null'>
+					AND t.sido = #{sd, jdbcType=VARCHAR}
+				</if>
+				<if test='sgg!="sgg" and sgg !=null'>
+					AND t.sigugun = #{sgg, jdbcType=VARCHAR}
+				</if>
+				<if test='emd!="emd" and emd!=null'>
+					AND  t.dongmyun = #{emd, jdbcType=VARCHAR}
+				</if>
+		</trim> )
+ 		WHERE page = #{page, jdbcType=INTEGER}
+		ORDER BY tno DESC
+	</select>
+	
+	<select id="getMapListCount" parameterType="mapVO" resultType="int">
+			SELECT COUNT(*)
+			FROM (SELECT CEIL(ROWNUM/10) page, t.tno tno, t.target_tno target_tno,	t.tdc_no tdc_no,  t.title title, 
+            			t.content content, t.price price, t.road_addr_part road_addr_part, t.sido sido, t.sigugun sigugun, t.dongmyun dongmyun, t.addr_detail addr_detail,	t.lat lat, t.lng lng,
+           				t.trade_code trade_code, t.regdate regdate, t.moddate moddate, t.writer_uno writer_uno, t.writer_nickname writer_nickname, t.enddate enddate, t.trade_type trade_type
+       			  FROM trade t
+			 	  LEFT JOIN trade_category c on (t.tdc_no = c.tdc_no)
+			<trim prefix="WHERE" prefixOverrides="AND">
+				<if test='title!=null or title!=""'>
+					t.title LIKE '%'||#{title, jdbcType=VARCHAR}||'%'
+				</if>
+				<if test='category!="category" and category!=null'>
+					AND (c.parent_no IN (select tdc_no from trade_category where name = #{category, jdbcType=VARCHAR})
+					OR c.tdc_no IN (select tdc_no from trade_category where name = #{category, jdbcType=VARCHAR}))
+				</if>
+				<if test='subcategory!="subcategory" and subcategory!=null'>
+					AND (c.parent_no IN (select tdc_no from trade_category where name = #{subcategory, jdbcType=VARCHAR})
+					OR c.tdc_no IN (select tdc_no from trade_category where name = #{subcategory, jdbcType=VARCHAR}))
+				</if>
+				<if test='tradeType!="all" and tradeType!=null'>
+					AND t.trade_type = #{tradeType , jdbcType=CHAR}
+				</if>
+				<if test='sd!="sd" and sd!=null'>
+					AND t.sido = #{sd, jdbcType=VARCHAR}
+				</if>
+				<if test='sgg!="sgg" and sgg !=null'>
+					AND t.sigugun = #{sgg, jdbcType=VARCHAR}
+				</if>
+				<if test='emd!="emd" and emd!=null'>
+					AND  t.dongmyun = #{emd, jdbcType=VARCHAR}
+				</if>
+		</trim> )
+		ORDER BY tno DESC
+	</select>
+	
+</mapper>

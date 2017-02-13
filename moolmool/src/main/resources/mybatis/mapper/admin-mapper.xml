@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="adminMapper">
+	<sql id="memberSearchQuery">
+		<if test="searchInfo != null and searchInfo.sKeyword != null">
+			WHERE (id LIKE '%'||#{searchInfo.sKeyword}||'%' 
+					OR role_code LIKE '%'||#{searchInfo.sKeyword}||'%'
+					OR name LIKE '%'||#{searchInfo.sKeyword}||'%'
+					OR nickname LIKE '%'||#{searchInfo.sKeyword}||'%' 
+					OR email LIKE '%'||#{searchInfo.sKeyword}||'%'
+					OR road_addr_part LIKE '%'||#{searchInfo.sKeyword}||'%'
+					OR jibun_addr LIKE '%'||#{searchInfo.sKeyword}||'%'
+					OR addr_detail LIKE '%'||#{searchInfo.sKeyword}||'%'
+					OR phone LIKE '%'||#{searchInfo.sKeyword}||'%')
+		</if>
+	</sql>
+	<sql id="searchQuery">
+		<if test="searchInfo != null and searchInfo.sType != null and searchInfo.sType != ''">
+			<choose>
+				<when test='searchInfo.sType.equals("t")'>
+					WHERE title LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("c")'>
+					WHERE content LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("tc")'>
+					WHERE (title LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR content LIKE '%'||#{searchInfo.sKeyword}||'%')
+				</when>
+				<when test='searchInfo.sType.equals("w")'>
+					WHERE writer_nickname LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("wn")'>
+					WHERE writer_no LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<otherwise>
+					WHERE (title LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR content LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR writer_nickname LIKE '%'||#{searchInfo.sKeyword}||'%')
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+
+	<select id="getMemberCount" resultType="int">
+		SELECT COUNT(*)
+		FROM member
+		WHERE role_code = 'ROLE_USER'
+			AND STATUS = 'A'
+	</select>
+	
+	<select id="getMemberAllCount" resultType="int">
+		SELECT COUNT(*)
+		FROM member
+	</select>
+	
+	<select id="getMemberList" parameterType="map" resultType="memberVO">
+		SELECT mem_no, role_code, id, name, nickname, email, road_addr_part, jibun_addr,
+			 addr_detail, phone, regdate, last_mod_date, point, tot_point, auth_number, status
+		FROM (
+			SELECT CEIL(ROWNUM / 10) page, mem_no, role_code, id, name, nickname, email, 
+				road_addr_part, jibun_addr, addr_detail, phone, regdate, last_mod_date, 
+				point, tot_point, auth_number, status
+			FROM member
+			<include refid="memberSearchQuery" />
+			ORDER BY mem_no desc
+		)
+		WHERE page = #{ page }
+	</select>
+	
+	<select id="getBoardAllList" parameterType="map" resultType="boardVO">
+		SELECT pno, b.bno, b.title, b.writer_no, b.writer_nickname, 
+			b.regdate, b.moddate, b.hit, b.is_deleted, b.bt_code, COUNT(c.bno) cmt_count, p.html_tag psc_html_tag, count(r.bno) report_count
+		FROM (
+			SELECT CEIL(ROWNUM / 10) page, RANK() OVER (ORDER BY bno ASC) pno, bno, title, 
+				writer_no, writer_nickname, regdate, moddate, hit, is_deleted, bt_code
+			FROM (
+				SELECT bno, title, writer_no, writer_nickname,
+					regdate, moddate, hit, is_deleted, bt_code
+				FROM board 
+				<include refid="searchQuery" />
+				ORDER BY bno DESC
+			)
+		) b 
+		LEFT JOIN 
+			(SELECT bno FROM board_comment WHERE is_deleted = 'N') c ON (b.bno = c.bno)
+		LEFT JOIN 
+			member m ON (b.writer_no = mem_no)
+		LEFT JOIN 
+			personacon p ON (m.psc_code = p.psc_no)
+		LEFT JOIN 
+      		board_report r ON (r.bno = b.bno)
+		WHERE page = #{page}
+		GROUP BY pno, b.bno, b.title, b.writer_no, b.writer_nickname, b.regdate, 
+			b.moddate, b.hit, b.is_deleted, b.bt_code, p.html_tag, r.bno
+		ORDER BY b.bno DESC
+	</select>
+	
+	<select id="getBoardDetail" parameterType="int" resultType="boardVO">
+		SELECT b.bno, b.title, b.content, b.writer_no, b.bt_code,
+			b.writer_nickname, b.regdate, b.moddate, b.hit, b.is_deleted, p.html_tag psc_html_tag,
+			(SELECT SUM(DECODE(e_type, 'LIKE', 1, -1)) 
+				FROM board_evaluate 
+				WHERE bno = #{bno}) score,
+			(SELECT COUNT(bno)  
+				FROM board_report 
+         		WHERE bno = #{bno}) report_count
+		FROM board b
+		LEFT JOIN 
+			member m ON (b.writer_no = mem_no)
+		LEFT JOIN 
+			personacon p ON (m.psc_code = p.psc_no)
+		WHERE b.bno = #{bno}
+	</select>
+	
+	<select id="getBoardTotalCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM board
+		<include refid="searchQuery" />
+	</select>
+	
+	<select id="getTradeCompleteCount" resultType="int">
+		SELECT COUNT(*)
+		FROM trade
+		WHERE trade_code = 'C'
+	</select>
+	
+	<select id="getTradeStayCount" resultType="int">
+		SELECT COUNT(*)
+		FROM trade
+		WHERE trade_code = 'S'
+	</select>
+	
+	<select id="getTradeProcessingCount" resultType="int">
+		SELECT COUNT(*)
+		FROM trade
+		WHERE trade_code = 'P'
+	</select>
+	
+	<update id="deleteMember" parameterType="int">
+		UPDATE member
+		SET status = 'B'
+		WHERE mem_no = #{ memNo }
+	</update>
+	
+	<select id="getMember" parameterType="int" resultType="memberVO">
+		SELECT mem_no, role_code, id, name, nickname, email, road_addr_part, jibun_addr,
+			 addr_detail, phone, regdate, last_mod_date, point, tot_point, auth_number, status
+		FROM member
+		WHERE mem_no = #{ memNo }
+	</select>
+</mapper>

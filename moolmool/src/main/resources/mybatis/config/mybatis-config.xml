@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+
+	<typeAliases>
+		<typeAlias type="com.wappl.moolmool.member.vo.MemberVO" alias="MemberVO"/>
+		<typeAlias type="com.wappl.moolmool.faq.vo.FaqVO" alias="faqVO"/>
+		<typeAlias type="com.wappl.moolmool.faq.vo.FaqTypeVO" alias="faqTypeVO"/>
+		<typeAlias type="com.wappl.moolmool.qna.vo.QuestionVO" alias="questionVO"/>
+		<typeAlias type="com.wappl.moolmool.qna.vo.AnswerVO" alias="answerVO" />
+		<typeAlias type="com.wappl.moolmool.qna.vo.SatisfactionVO" alias="satisfactionVO" />
+		<typeAlias type="com.wappl.moolmool.notice.vo.NoticeVO" alias="noticeVO" />
+		<typeAlias type="com.wappl.moolmool.msg.vo.MsgVO" alias="msgVO"/>
+		<typeAlias type="com.wappl.moolmool.board.vo.BoardVO" alias="boardVO"/>
+		<typeAlias type="com.wappl.moolmool.board.vo.BoardTypeVO" alias="boardTypeVO"/>
+		<typeAlias type="com.wappl.moolmool.board.vo.BoardReportVO" alias="boardReportVO"/>
+		<typeAlias type="com.wappl.moolmool.board.vo.BoardCommentVO" alias="boardCommentVO"/>
+		<typeAlias type="com.wappl.moolmool.board.vo.BoardEvaluateVO" alias="boardEvaluateVO"/>
+		<typeAlias type="com.wappl.moolmool.trade.vo.TradeCategoryVO" alias="tradeCategoryVO"/>
+		<typeAlias type="com.wappl.moolmool.trade.vo.TradeVO" alias="tradeVO"/>
+		<typeAlias type="com.wappl.moolmool.trade.vo.TradeCommentVO" alias="tradeCommentVO"/>
+		<typeAlias type="com.wappl.moolmool.memo.vo.MemoVO" alias="memoVO"/>
+		<typeAlias type="com.wappl.moolmool.shop.vo.PersonaconVO" alias="personaconVO"/>
+		<typeAlias type="com.wappl.moolmool.shop.vo.PersonaconOrderHistoryVO" alias="personaconOrderHistoryVO"/>
+		<typeAlias type="com.wappl.moolmool.point.vo.PointVO" alias="pointVO"/>
+		<typeAlias type="com.wappl.moolmool.map.vo.MapVO" alias="mapVO"/>
+		<typeAlias type="com.wappl.moolmool.slide.vo.SlideContentVO" alias="slideContentVO"/>
+		<typeAlias type="com.wappl.moolmool.shop.vo.ShopItemVO" alias="shopItemVO"/>
+	</typeAliases>
+	
+</configuration>

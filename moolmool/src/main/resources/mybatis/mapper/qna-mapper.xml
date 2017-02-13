@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="qnaMapper">
+
+	<sql id="searchQuery">
+		<if test="searchInfo != null and searchInfo.sType != null and searchInfo.sType != ''">
+			<choose>
+				<when test='searchInfo.sType.equals("t")'>
+					AND title LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("c")'>
+					AND content LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<when test='searchInfo.sType.equals("tc")'>
+					AND (title LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR content LIKE '%'||#{searchInfo.sKeyword}||'%')
+				</when>
+				<when test='searchInfo.sType.equals("w")'>
+					AND writer_nickname LIKE '%'||#{searchInfo.sKeyword}||'%'
+				</when>
+				<otherwise>
+					AND (title LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR content LIKE '%'||#{searchInfo.sKeyword}||'%'
+						OR writer_nickname LIKE '%'||#{searchInfo.sKeyword}||'%')
+				</otherwise>
+			</choose>
+		</if>
+	</sql>
+	
+	<select id="getQuestionList" parameterType="map" resultType="questionVO">
+		SELECT q.qno, q.writer_no, q.writer_nickname, q.title, q.content, q.regdate, q.moddate,
+			q.is_private, q.is_deleted, q.reply
+		FROM ( 
+			SELECT CEIL(ROWNUM/10) page, qno, writer_no, writer_nickname, title, content, 
+				regdate, moddate, is_private, is_deleted, reply	
+			FROM (
+				SELECT qno, writer_no, writer_nickname, title, content, 
+					regdate, moddate, is_private, is_deleted, reply
+				FROM question
+				WHERE is_deleted = 'N'
+        			<include refid="searchQuery" />
+        		ORDER BY qno DESC
+			)
+		) q
+		WHERE page = #{page}
+	</select>
+	
+	<select id="getQuestionTotalCount" resultType="int">
+		SELECT COUNT(*)
+		FROM question
+		WHERE is_deleted = 'N'
+			<include refid="searchQuery" />
+	</select>
+	
+	<select id="getQuestionDetail" parameterType="questionVO" resultType="questionVO">
+		SELECT qno, writer_no, writer_nickname, title, content, regdate, moddate,
+			is_private, is_deleted, reply
+		FROM question
+		WHERE QNO = #{qno}
+	</select>
+	
+	<insert id="insertQuestion" parameterType="questionVO">
+		INSERT INTO question(qno, writer_no, writer_nickname, title, content, regdate,
+			 moddate, is_private, is_deleted, reply)
+		VALUES(SEQ_QUESTION_QNO.NEXTVAL, #{writerNo}, #{writerNickname}, 
+			#{title}, #{content}, SYSDATE, SYSDATE, DEFAULT, DEFAULT, DEFAULT)
+	</insert>
+	
+	<update id="updateQuestion" parameterType="questionVO">
+		UPDATE question
+		SET title = #{title},
+			content = #{content},
+			moddate = SYSDATE,
+			is_private = #{isPrivate}
+		WHERE qno = #{qno}
+	</update>
+	
+	<update id="updateReply" parameterType="int">
+		UPDATE question
+		SET reply = 'Y'
+		WHERE qno = #{ qno }
+	</update>
+	
+	<update id="deleteQuestion" parameterType="int">
+		UPDATE question
+		SET is_deleted = 'Y'
+		WHERE qno = #{qno}
+	</update>
+	
+	<select id="getAnswer" parameterType="int" resultType="answerVO">	
+		SELECT a.ano, a.qno, a.admin_no, m.nickname admin_nickname, a.content, a.regdate, a.moddate, a.is_evaluated
+		FROM answer a, member m
+		WHERE a.admin_no = m.mem_no AND qno = #{qno}
+	</select>
+	
+	<insert id="insertAnswer" parameterType="answerVO">
+		INSERT INTO answer
+		VALUES (SEQ_ANSWER_ANO.NEXTVAL, #{qno}, #{adminNo}, #{content}, SYSDATE, SYSDATE, DEFAULT)
+	</insert>
+	
+	<update id="updateAnswer" parameterType="answerVO">
+		UPDATE answer
+		SET content = #{content}
+		WHERE qno = #{qno}
+	</update>
+	
+	<update id="updateIsEvaluated" parameterType="int">
+		UPDATE answer
+		SET is_evaluated = 'Y'
+		WHERE ano = #{ano}
+	</update>
+	
+	<select id="getSatisfaction" parameterType="answerVO" resultType="satisfactionVO">
+		SELECT ano, writer_no, rate, opinion, regdate
+		FROM qna_satisfaction
+		WHERE ano = #{ano}
+	</select>
+	
+	<insert id="insertSatisfaction" parameterType="satisfactionVO">
+		INSERT INTO qna_satisfaction
+		VALUES(#{ano}, #{writerNo}, #{rate}, #{opinion}, SYSDATE)
+	</insert>
+		
+</mapper>
